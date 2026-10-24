@@ -1,7 +1,7 @@
-const app = require('./app');
+const app = require("./app");
 
 const PORT = 5000;
 
 app.listen(PORT, () => {
-  console.log(`Car wash is running on port ${PORT}`);
+  console.log(`Sparkle Car Wash is running on port ${PORT}`);
 });
