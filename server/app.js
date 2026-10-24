@@ -27,6 +27,10 @@ app.use((err, req, res, next) => {
       ? err.message
       : 'Request failed';
 
+  if (status >= 500) {
+    console.error('Internal server error:', err);
+  }
+
   res.status(status).json({ error: message });
 });
 

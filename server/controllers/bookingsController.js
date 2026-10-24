@@ -30,7 +30,8 @@ function createBooking(req, res) {
     return res.status(400).json({ error: 'Date cannot be in the past' });
   }
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  const normalizedEmail = email.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
     return res.status(400).json({ error: 'Email address is invalid' });
   }
 
@@ -51,7 +52,7 @@ function createBooking(req, res) {
     startTime: slot.startTime,
     endTime: slot.endTime,
     name: name.trim(),
-    email: email.trim(),
+    email: normalizedEmail,
     createdAt: new Date().toISOString()
   };
 

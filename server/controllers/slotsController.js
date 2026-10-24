@@ -1,6 +1,11 @@
 const bookings = require('../data/bookings');
 const { RESOURCES } = require('../data/config');
-const { generateSlots, isValidDate } = require('../utils/bookingUtils');
+const {
+  generateSlots,
+  hasBookingConflict,
+  isPastDate,
+  isValidDate
+} = require('../utils/bookingUtils');
 
 function getAvailableSlots(req, res) {
   const { resource, date } = req.query;
@@ -14,15 +19,22 @@ function getAvailableSlots(req, res) {
     return res.status(400).json({ error: 'Date must be a real date in YYYY-MM-DD format' });
   }
 
+  if (isPastDate(date)) {
+    return res.status(400).json({ error: 'Date cannot be in the past' });
+  }
+
   if (!RESOURCES.includes(resource)) {
     return res.status(404).json({ error: 'Resource not found' });
   }
 
-  const bookedStartTimes = bookings
-    .filter((booking) => booking.resource === resource && booking.date === date)
-    .map((booking) => booking.startTime);
   const availableSlots = generateSlots().filter(
-    (slot) => !bookedStartTimes.includes(slot.startTime)
+    (slot) => !hasBookingConflict(
+      bookings,
+      resource,
+      date,
+      slot.startTime,
+      slot.endTime
+    )
   );
 
   return res.json(availableSlots);
