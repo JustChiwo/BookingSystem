@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { bookingApi } from './api/bookingApi';
-import AvailabilityView from './components/AvailabilityView';
+import AppHeader from './components/AppHeader';
+import BookingDashboard from './components/BookingDashboard';
 import BookingForm from './components/BookingForm';
-import DatePicker from './components/DatePicker';
-import { CheckIcon, WaterDropIcon } from './components/Icons';
-import ReservationList from './components/ReservationList';
-import ResourceSelector from './components/ResourceSelector';
+import FeedbackMessage from './components/FeedbackMessage';
+import PageFooter from './components/PageFooter';
 import { getLocalDateString } from './utils/date';
 
 function App() {
@@ -109,6 +108,11 @@ function App() {
     setSuccessMessage('');
   }
 
+  function handleSelectSlot(slot) {
+    setSuccessMessage('');
+    setSelectedSlot(slot);
+  }
+
   async function handleBookingSubmit(details) {
     await bookingApi.createBooking({
       resource,
@@ -131,93 +135,31 @@ function App() {
   return (
     <main className="page-shell">
       <div className="app-container">
-        <header className="site-header">
-          <div className="brand-mark" aria-hidden="true">
-            <WaterDropIcon />
-          </div>
-          <div>
-            <p className="eyebrow">A little shine goes a long way</p>
-            <h1>Sparkle Car Wash</h1>
-            <p className="header-description">
-              Book a wash or detailing appointment in just a few clicks.
-            </p>
-          </div>
-        </header>
+        <AppHeader />
 
-        {pageError && (
-          <div className="notice notice-error" role="alert">
-            {pageError}
-          </div>
-        )}
+        <FeedbackMessage type="error" message={pageError} />
+        <FeedbackMessage
+          type="success"
+          message={successMessage}
+          onDismiss={() => setSuccessMessage('')}
+        />
 
-        {successMessage && (
-          <div className="notice notice-success" role="status">
-            <CheckIcon />
-            <span>{successMessage}</span>
-            <button
-              className="notice-dismiss"
-              type="button"
-              onClick={() => setSuccessMessage('')}
-              aria-label="Dismiss success message"
-            >
-              ×
-            </button>
-          </div>
-        )}
+        <BookingDashboard
+          resources={resources}
+          resource={resource}
+          date={date}
+          slots={slots}
+          bookings={bookings}
+          resourcesLoading={resourcesLoading}
+          availabilityLoading={availabilityLoading}
+          error={availabilityError}
+          onResourceChange={handleResourceChange}
+          onDateChange={handleDateChange}
+          onSelectSlot={handleSelectSlot}
+          onCancelBooking={handleCancelBooking}
+        />
 
-        <div className="dashboard-grid">
-          <section className="glass-card booking-panel" aria-labelledby="booking-heading">
-            <div className="section-heading">
-              <div>
-                <p className="eyebrow">Make it sparkle</p>
-                <h2 id="booking-heading">Find a time</h2>
-              </div>
-              <span className="step-badge">01</span>
-            </div>
-
-            <div className="filter-grid">
-              <ResourceSelector
-                resources={resources}
-                value={resource}
-                loading={resourcesLoading}
-                onChange={handleResourceChange}
-              />
-              <DatePicker value={date} onChange={handleDateChange} />
-            </div>
-
-            {resource ? (
-              <AvailabilityView
-                slots={slots}
-                loading={availabilityLoading}
-                error={availabilityError}
-                onSelectSlot={(slot) => {
-                  setSuccessMessage('');
-                  setSelectedSlot(slot);
-                }}
-              />
-            ) : !resourcesLoading && !pageError ? (
-              <div className="inline-error" role="status">
-                No bays are currently available.
-              </div>
-            ) : null}
-          </section>
-
-          {resource && (
-            <ReservationList
-              bookings={bookings}
-              date={date}
-              resource={resource}
-              loading={availabilityLoading || resourcesLoading}
-              error={availabilityError}
-              onCancelBooking={handleCancelBooking}
-            />
-          )}
-        </div>
-
-        <footer className="site-footer">
-          <span>Fresh, clean, and ready to roll.</span>
-          <span>Choose a bay, pick a time, leave the shine to us.</span>
-        </footer>
+        <PageFooter />
       </div>
 
       {selectedSlot && (
